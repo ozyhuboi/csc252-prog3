@@ -193,8 +193,11 @@ void eval(char *cmdline)
 				unix_error("waitfg: waitpid error lolol");
 			}
 		}
-		else{
-			printf("%d %s", pid, cmdline);
+		else{ //we have a process that is supposed to run in the background
+			if (!addjob(jobs, pid, BG, cmdline)) //so we add that process to our job list
+			        return; //WE'VE ADDED TOO MANY JOBS!!
+			//print out information on the job that is executing in the background
+			printf("[%d] (%d) %s", pid2jid(pid), pid, cmdline);
 		}
 	}
 
@@ -293,6 +296,10 @@ int builtin_cmd(char **argv) //figure 8.23
 	}
 	if (!strcmp(argv[0], "&")){
 		return 1;
+	}
+	if (!strcmp(argv[0], "jobs")){
+	    listjobs(jobs);
+	    return 1;
 	}
 	return 0;     /* not a builtin command */
 }
@@ -467,8 +474,10 @@ int pid2jid(pid_t pid)
 {
     int i;
 
-    if (pid < 1)
+    if (pid < 1){
+
 	return 0;
+    }
     for (i = 0; i < MAXJOBS; i++)
 	if (jobs[i].pid == pid) {
             return jobs[i].jid;
