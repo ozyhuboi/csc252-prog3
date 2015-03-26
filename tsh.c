@@ -118,6 +118,8 @@ int main(int argc, char **argv)
     }
 
     /* Install the signal handlers */
+	if ((signal(SIGINT, sigint_handler)) == SIG_ERR)
+		unix_error("signal error");
 
     /* These are the ones you will need to implement */
     Signal(SIGINT,  sigint_handler);   /* ctrl-c */
@@ -168,6 +170,7 @@ int main(int argc, char **argv)
 void eval(char *cmdline) 
 {
 
+	pause();
 	//TAKEN DIRECTLY FROM PAGE 735 of the 252 Perspective Textbook
 	char *argv[MAXARGS]; 	//argument list execve()
 	char buf[MAXLINE]; 		//holds a modified version of the command line
@@ -343,7 +346,10 @@ void sigchld_handler(int sig)
  */
 void sigint_handler(int sig) 
 {
-    return;
+    //printf("hello from ME!! I'm the next little shitter you'll have to find.");
+	printf("hello from sigint_handler");
+    exit(0);
+	return;
 }
 
 /*
