@@ -169,7 +169,6 @@ int main(int argc, char **argv)
 */
 void eval(char *cmdline) 
 {
-
 	//TAKEN DIRECTLY FROM PAGE 735 of the 252 Perspective Textbook
 	char *argv[MAXARGS]; 	//argument list execve()
 	char buf[MAXLINE]; 		//holds a modified version of the command line
@@ -181,9 +180,9 @@ void eval(char *cmdline)
 	if(argv[0] == NULL)
 		return; 				//ignore empty lines
 
-	if(!builtin_cmd(argv)){		//if not "quit" or "fg" or "bg"...
+	if(!builtin_cmd(argv)){			//if not "quit" or "fg" or "bg"...
 		if((pid = fork()) == 0) {	//make a child and tell that child to execute:
-			setpgid(0,0); //In the tips section of the assignment.
+			setpgid(0,0); 			//In the tips section of the assignment.
 			if (execve(argv[0], argv, environ) < 0){			//....um not sure what this line does exactly. creates a new child process with the same environment variables?
 				printf("%s: Command not found.\n", argv[0]);
 				exit(0);
@@ -191,18 +190,24 @@ void eval(char *cmdline)
 		}
 		//parent waits for foreground job to terminate
 		if(!bg) {
+		//	printf("%s is a foreground job!\n", cmdline);
 			addjob(jobs,pid,FG,cmdline);
 			int status;
 			if(waitpid(pid, &status, 0) < 0){
 				unix_error("waitfg: waitpid error lolol");
 			}
+		//	printf("fg listjobs\n");
+			deletejob(jobs, pid);
+
 		}
 		else{ //we have a process that is supposed to run in the background
-			//printf("we're going ot add a process to the background!");
-			if (!addjob(jobs, pid, BG, cmdline)) //so we add that process to our job list
-			        return; //WE'VE ADDED TOO MANY JOBS!!
+			//printf("%s is a background job!\n", cmdline);
+			addjob(jobs, pid, BG, cmdline); //so we add that process to our job lis
 			//print out information on the job that is executing in the background
+			//printf("bg listjobs\n");
+			//	listjobs(jobs);
 			printf("[%d] (%d) %s", pid2jid(pid), pid, cmdline);
+
 		}
 	}
 
