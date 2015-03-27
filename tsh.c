@@ -118,8 +118,8 @@ int main(int argc, char **argv)
     }
 
     /* Install the signal handlers */
-	if ((signal(SIGINT, sigint_handler)) == SIG_ERR)
-		unix_error("signal error");
+	//if ((signal(SIGINT, sigint_handler)) == SIG_ERR)
+		//unix_error("signal error");
 
     /* These are the ones you will need to implement */
     Signal(SIGINT,  sigint_handler);   /* ctrl-c */
@@ -170,7 +170,6 @@ int main(int argc, char **argv)
 void eval(char *cmdline) 
 {
 
-	pause();
 	//TAKEN DIRECTLY FROM PAGE 735 of the 252 Perspective Textbook
 	char *argv[MAXARGS]; 	//argument list execve()
 	char buf[MAXLINE]; 		//holds a modified version of the command line
@@ -184,6 +183,7 @@ void eval(char *cmdline)
 
 	if(!builtin_cmd(argv)){		//if not "quit" or "fg" or "bg"...
 		if((pid = fork()) == 0) {	//make a child and tell that child to execute:
+			setpgid(0,0); //In the tips section of the assignment.
 			if (execve(argv[0], argv, environ) < 0){			//....um not sure what this line does exactly. creates a new child process with the same environment variables?
 				printf("%s: Command not found.\n", argv[0]);
 				exit(0);
@@ -191,12 +191,14 @@ void eval(char *cmdline)
 		}
 		//parent waits for foreground job to terminate
 		if(!bg) {
+			addjob(jobs,pid,FG,cmdline);
 			int status;
 			if(waitpid(pid, &status, 0) < 0){
 				unix_error("waitfg: waitpid error lolol");
 			}
 		}
 		else{ //we have a process that is supposed to run in the background
+			//printf("we're going ot add a process to the background!");
 			if (!addjob(jobs, pid, BG, cmdline)) //so we add that process to our job list
 			        return; //WE'VE ADDED TOO MANY JOBS!!
 			//print out information on the job that is executing in the background
@@ -336,7 +338,9 @@ void waitfg(pid_t pid)
  */
 void sigchld_handler(int sig) 
 {
-    return;
+
+	//printf("sigchild\n");
+	return;
 }
 
 /* 
@@ -346,9 +350,11 @@ void sigchld_handler(int sig)
  */
 void sigint_handler(int sig) 
 {
-    //printf("hello from ME!! I'm the next little shitter you'll have to find.");
-	printf("hello from sigint_handler");
-    exit(0);
+	pid_t pid = fgpid(jobs); //get foreground process id
+	printf("Job [%d] (%d) terminated by signal %d\n", pid2jid(pid), pid, sig);
+
+	exit(0);
+
 	return;
 }
 
@@ -359,7 +365,8 @@ void sigint_handler(int sig)
  */
 void sigtstp_handler(int sig) 
 {
-    return;
+	//printf("hello from sigtstp_handler");
+	return;
 }
 
 /*********************
