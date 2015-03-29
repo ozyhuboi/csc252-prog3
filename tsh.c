@@ -197,39 +197,6 @@ void eval(char *cmdline)
             waitfg(pid);
 
 		}
-<<<<<<< HEAD
-		else{ //we have a process that is supposed to run in the background
-			//printf("%s is a background job!\n", cmdline);
-			addjob(jobs, pid, BG, cmdline); //so we add that process to our job lis
-			//print out information on the job that is executing in the background
-			//printf("bg listjobs\n");
-			//	listjobs(jobs);
-			printf("[%d] (%d) %s", pid2jid(pid), pid, cmdline);
-		}
-	}
-	//taken from book pg757
-
-
-/*
-	while (1) {
-		Sigemptyset(&mask);
-		Sigaddset(&mask, SIGCHLD);
-		Sigprocmask(SIG_BLOCK, &mask, NULL); // Block SIGCHLD
-
-		// Child process
-		if ((pid = Fork()) == 0) {
-		Sigprocmask(SIG_UNBLOCK, &mask, NULL); // Unblock SIGCHLD
-		Execve("/bin/date", argv, NULL);
-		}
-
-		// Parent process
-		addjob(jobs, pid, FG, cmdline); // Add the child to the job list /
-		Sigprocmask(SIG_UNBLOCK, &mask, NULL); // Unblock SIGCHLD /
-
-		}
-*/
-
-=======
 		//BACKGROUND PROCESS
 		else{
 			addjob(jobs, pid, BG, cmdline); 		//add
@@ -237,7 +204,6 @@ void eval(char *cmdline)
 			printf("[%d] (%d) %s", pid2jid(pid), pid, cmdline);	//we only print status of bg process due to testing formating.
 		}
 	}
->>>>>>> origin/stage
 	return;
 }
 
@@ -435,7 +401,7 @@ void sigtstp_handler(int sig)
     if (pid != 0) {
         printf("Job [%d] (%d) stopped by signal %d\n", pid2jid(pid), pid, sig);
         getjobpid(jobs, pid)->state = ST;
-        kill(-pid, SIGTSTP);
+        //kill(-pid, SIGTSTP);
     }
     return;
 }
