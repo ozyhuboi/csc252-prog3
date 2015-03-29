@@ -314,11 +314,11 @@ int builtin_cmd(char **argv) //figure 8.23
 	    listjobs(jobs);
 	    return 1;
 	}
-	if(!strcmp(argv[0], "bg") | !strcmp(argv[0], "fg")){
+	if(!strcmp(argv[0], "bg") | !strcmp(argv[0], "fg")){ //09/10
 		do_bgfg(argv);
 		return 1;
 	}
-	return 0;     /* not a builtin command */
+	return 0;     // isn't a built-in command
 }
 
 /* 
@@ -342,8 +342,7 @@ void do_bgfg(char **argv)
 	}
 
 	//Pg. 771 - test09 / test10
-	//The bg <job> restarts <job> by sending it a SIGCONT signal, then runs it in the background.
-
+	/*The bg <job> restarts <job> by sending it a SIGCONT signal, then runs it in the background. */
 	//BG COMMAND
 	if (strcmp("bg", argv[0]) == 0) {
 		kill(job->pid, SIGCONT);									//send signal
@@ -351,7 +350,7 @@ void do_bgfg(char **argv)
         printf("[%d] (%d) %s", job->jid, job->pid, job->cmdline); 	//required by output.
 	}
 
-	//The fg <job>  restarts <job> by sending it a SIGNCONT signal, then runs it in the foreground.
+	/*The fg <job>  restarts <job> by sending it a SIGNCONT signal, then runs it in the foreground.*/
 	//FG COMMAND
 	else if (strcmp("fg", argv[0]) == 0) {
 		kill(job->pid, SIGCONT);
@@ -416,6 +415,7 @@ void sigchld_handler(int sig)
 void sigint_handler(int sig) 
 {
 	pid_t pid = fgpid(jobs); //get foreground process id
+	//kill(pid, SIGINT);
 	printf("Job [%d] (%d) terminated by signal %d\n", pid2jid(pid), pid, sig);
 	//exit(0);
 	deletejob(jobs, pid);
