@@ -205,12 +205,8 @@ void eval(char *cmdline)
 			//printf("bg listjobs\n");
 			//	listjobs(jobs);
 			printf("[%d] (%d) %s", pid2jid(pid), pid, cmdline);
-
 		}
 	}
-
-
-
 	//taken from book pg757
 
 
@@ -421,9 +417,8 @@ void sigint_handler(int sig)
 {
 	pid_t pid = fgpid(jobs); //get foreground process id
 	printf("Job [%d] (%d) terminated by signal %d\n", pid2jid(pid), pid, sig);
-
-	exit(0);
-
+	//exit(0);
+	deletejob(jobs, pid);
 	return;
 }
 
