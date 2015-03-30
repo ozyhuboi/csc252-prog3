@@ -302,20 +302,16 @@ void do_bgfg(char **argv)
 	if(argv[1] != NULL){
 		jidconcat = argv[1];
 
-		//Now I know the format of the command.
-		//printf("arg0: %s\n", argv[0]);
-		//printf("arg1: %s\n", argv[1]);
-		//printf("WTF?");
+		//JID PROVIDED
 		//remove the % from the second argument string
 		if (jidconcat[0] == '%') {
-		//	printf("FUCK");
 			jid = atoi(&jidconcat[1]); 	//http://www.cplusplus.com/reference/cstdlib/atoi/
 			job = getjobjid(jobs, jid);
 
 			if(job == NULL){ // Check for NULL
 				printf("%s: No such job\n", argv[1]);
 			}
-				else {
+			else {
 				//Pg. 771 - test09 / test10
 				/*The bg <job> restarts <job> by sending it a SIGCONT signal, then runs it in the background. */
 				//BG COMMAND
@@ -333,13 +329,15 @@ void do_bgfg(char **argv)
 					waitfg(job->pid);				//wait to terminate
 				}
 			}
-		} else //Check for processes
+		}
+		//PID PROVIDED
+		else
+		{
 			if (jidconcat[0] == '0' || jidconcat[0] == '1' || jidconcat[0] == '2' || jidconcat[0] == '3' || jidconcat[0] == '4' ||
 				jidconcat[0] == '5' || jidconcat[0] == '6' || jidconcat[0] == '7' || jidconcat[0] == '8' || jidconcat[0] == '9' ) { // Hard-code regex
 				pid = atoi(&jidconcat[0]);
 				jid = pid2jid(pid);
 				job = getjobjid(jobs, jid);
-				//printf("process: (%d)\n", pid);
 
 				if (job == NULL) { // Check for NULL
 					printf("(%d): No such process\n", pid);
@@ -352,17 +350,9 @@ void do_bgfg(char **argv)
 					printf("%s", "bg: argument must be a PID or %jobid\n" );
 				}
 			}
-
-
-
-
-		//	printf("LOL");
-		//	jids = argv[1];
-
-		//printf("jids = %s", jids);
-
-
+		}
 	}
+
 	//NO JID PROVIDED
 	else{
 		if (strcmp("fg", argv[0]) == 0) {
@@ -372,7 +362,6 @@ void do_bgfg(char **argv)
 			printf("%s", "bg command requires PID or %jobid argument\n");
 		} else  //For robustness I guess? Though it really shouldn't reach here
 			printf("%s", "No PID or %jobid argument provided\n");
-
 	}
 	return;
 }
@@ -384,7 +373,6 @@ void waitfg(pid_t pid)
 {
 	  while(fgpid(jobs)==pid) 		//if pid == fg pid
 	        sleep(1);				//"JUST WAIT ya [CENSORED]" - Bswizzle Allard.
-	  //printf("EXIT WAITFG\n");
     return;
 }
 
@@ -416,10 +404,14 @@ void sigchld_handler(int sig)
         	//child is currently stopped
             sigtstp_handler(20); //forced to be 20 due to test08
         }
-        else if (WIFSIGNALED(status) | WIFEXITED(status)) {
-        	//Job was interrupted by random signal or exited normally.
+        else if(WIFEXITED(status)) {
+        	//if job exited normally, remove zombie.
         	deletejob(jobs,pid);
         }
+        else if (WIFSIGNALED(status)){
+        	//test16 - signal from unknown source? aliens, perhaps?
+         	sigint_handler(2);
+     	}
     }
     return;
 }
@@ -432,9 +424,7 @@ void sigchld_handler(int sig)
 void sigint_handler(int sig) 
 {
 	pid_t pid = fgpid(jobs); //get foreground process id
-	//kill(pid, SIGINT);
 	printf("Job [%d] (%d) terminated by signal %d\n", pid2jid(pid), pid, sig);
-	//exit(0);
 	deletejob(jobs, pid);
 	return;
 }
@@ -446,14 +436,9 @@ void sigint_handler(int sig)
  */
 void sigtstp_handler(int sig) 
 {
-    int pid = fgpid(jobs);
-
-    /* Only sleep jobs that are on the job list*/
-    if (pid != 0) {
-        printf("Job [%d] (%d) stopped by signal %d\n", pid2jid(pid), pid, sig);
-        getjobpid(jobs, pid)->state = ST;
-        //kill(-pid, SIGTSTP);
-    }
+    int pid = fgpid(jobs); //get foreground process id
+    printf("Job [%d] (%d) stopped by signal %d\n", pid2jid(pid), pid, sig);
+    getjobpid(jobs, pid)->state = ST; //change job state to stop process
     return;
 }
 
