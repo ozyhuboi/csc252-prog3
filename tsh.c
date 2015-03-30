@@ -294,34 +294,55 @@ void do_bgfg(char **argv)
 {
 	//bg/fg only passes in JID until test14
 	int jid;
+	char* jids;
 	struct job_t *job;
-	char* jidconcat = argv[1];
+	char* jidconcat;
+	if(argv[1] != NULL){
+		jidconcat = argv[1];
 
-	//Now I know the format of the command.
-	//printf("arg0: %s\n", argv[0]);
-	//printf("arg1: %s\n", argv[1]);
+		//Now I know the format of the command.
+		//printf("arg0: %s\n", argv[0]);
+		//printf("arg1: %s\n", argv[1]);
+		//printf("WTF?");
+		//remove the % from the second argument string
+		if (jidconcat[0] == '%') {
+		//	printf("FUCK");
+			jid = atoi(&jidconcat[1]); 	//http://www.cplusplus.com/reference/cstdlib/atoi/
+			job = getjobjid(jobs, jid);
 
-	//remove the % from the second argument string
-	if (jidconcat[0] == '%') {
-	        jid = atoi(&jidconcat[1]); 	//http://www.cplusplus.com/reference/cstdlib/atoi/
-	        job = getjobjid(jobs, jid);
+			if(job == NULL){
+				printf("%s: No such job.\n", argv[1]);
+			}
+				else{
+				//Pg. 771 - test09 / test10
+				/*The bg <job> restarts <job> by sending it a SIGCONT signal, then runs it in the background. */
+				//BG COMMAND
+				if (strcmp("bg", argv[0]) == 0) {
+					kill(job->pid, SIGCONT);									//send signal
+					job->state = BG;											//background process
+					printf("[%d] (%d) %s", job->jid, job->pid, job->cmdline); 	//required by output.
+				}
+
+				/*The fg <job>  restarts <job> by sending it a SIGNCONT signal, then runs it in the foreground.*/
+				//FG COMMAND
+				else if (strcmp("fg", argv[0]) == 0) {
+					kill(job->pid, SIGCONT);
+					job->state = FG;				//foreground process
+					waitfg(job->pid);				//wait to terminate
+				}
+			}
+		}
+		else{
+		//	printf("LOL");
+		//	jids = argv[1];
+		}
+		//printf("jids = %s", jids);
+
+
 	}
-
-	//Pg. 771 - test09 / test10
-	/*The bg <job> restarts <job> by sending it a SIGCONT signal, then runs it in the background. */
-	//BG COMMAND
-	if (strcmp("bg", argv[0]) == 0) {
-		kill(job->pid, SIGCONT);									//send signal
-		job->state = BG;											//background process
-        printf("[%d] (%d) %s", job->jid, job->pid, job->cmdline); 	//required by output.
-	}
-
-	/*The fg <job>  restarts <job> by sending it a SIGNCONT signal, then runs it in the foreground.*/
-	//FG COMMAND
-	else if (strcmp("fg", argv[0]) == 0) {
-		kill(job->pid, SIGCONT);
-		job->state = FG;				//foreground process
-		waitfg(job->pid);				//wait to terminate
+	//NO JID PROVIDED
+	else{
+		printf("that argumenet was not provided!\n");
 	}
 	return;
 }
