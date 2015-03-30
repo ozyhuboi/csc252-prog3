@@ -185,7 +185,7 @@ void eval(char *cmdline)
 		if((pid = fork()) == 0) {								//make a child and tell that child to execute:
 			setpgid(0,0); 										//In the tips section of the assignment.
 			if (execve(argv[0], argv, environ) < 0){			//if not a valid command, exit.
-				printf("%s: Command not found.\n", argv[0]);
+				printf("%s: Command not found\n", argv[0]);
 				exit(0);
 			}
 		}
@@ -313,7 +313,7 @@ void do_bgfg(char **argv)
 			job = getjobjid(jobs, jid);
 
 			if(job == NULL){ // Check for NULL
-				printf("%s: No such job.\n", argv[1]);
+				printf("%s: No such job\n", argv[1]);
 			}
 				else {
 				//Pg. 771 - test09 / test10
@@ -342,7 +342,7 @@ void do_bgfg(char **argv)
 				//printf("process: (%d)\n", pid);
 
 				if (job == NULL) { // Check for NULL
-					printf("(%d): No such process.\n", pid);
+					printf("(%d): No such process\n", pid);
 				}
 			} else {
 				if (strcmp("fg", argv[0]) == 0) {
