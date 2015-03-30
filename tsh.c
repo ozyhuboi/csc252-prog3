@@ -295,7 +295,6 @@ void do_bgfg(char **argv)
 	//bg/fg only passes in JID until test14
 	int jid;
 	int pid;
-	char* jids;
 	struct job_t *job;
 	char* jidconcat;
 
@@ -424,8 +423,10 @@ void sigchld_handler(int sig)
 void sigint_handler(int sig) 
 {
 	pid_t pid = fgpid(jobs); //get foreground process id
-	printf("Job [%d] (%d) terminated by signal %d\n", pid2jid(pid), pid, sig);
-	deletejob(jobs, pid);
+	if(pid > 0){	//Mandatory return-value checking. #5points
+		printf("Job [%d] (%d) terminated by signal %d\n", pid2jid(pid), pid, sig);
+		deletejob(jobs, pid);
+	}
 	return;
 }
 
@@ -437,8 +438,10 @@ void sigint_handler(int sig)
 void sigtstp_handler(int sig) 
 {
     int pid = fgpid(jobs); //get foreground process id
-    printf("Job [%d] (%d) stopped by signal %d\n", pid2jid(pid), pid, sig);
-    getjobpid(jobs, pid)->state = ST; //change job state to stop process
+	if(pid > 0){	//Mandatory return-value checking. #5points
+		printf("Job [%d] (%d) stopped by signal %d\n", pid2jid(pid), pid, sig);
+		getjobpid(jobs, pid)->state = ST; //change job state to stop process
+	}
     return;
 }
 
