@@ -294,9 +294,11 @@ void do_bgfg(char **argv)
 {
 	//bg/fg only passes in JID until test14
 	int jid;
+	int pid;
 	char* jids;
 	struct job_t *job;
 	char* jidconcat;
+
 	if(argv[1] != NULL){
 		jidconcat = argv[1];
 
@@ -310,10 +312,10 @@ void do_bgfg(char **argv)
 			jid = atoi(&jidconcat[1]); 	//http://www.cplusplus.com/reference/cstdlib/atoi/
 			job = getjobjid(jobs, jid);
 
-			if(job == NULL){
+			if(job == NULL){ // Check for NULL
 				printf("%s: No such job.\n", argv[1]);
 			}
-				else{
+				else {
 				//Pg. 771 - test09 / test10
 				/*The bg <job> restarts <job> by sending it a SIGCONT signal, then runs it in the background. */
 				//BG COMMAND
@@ -331,18 +333,46 @@ void do_bgfg(char **argv)
 					waitfg(job->pid);				//wait to terminate
 				}
 			}
-		}
-		else{
+		} else //Check for processes
+			if (jidconcat[0] == '0' || jidconcat[0] == '1' || jidconcat[0] == '2' || jidconcat[0] == '3' || jidconcat[0] == '4' ||
+				jidconcat[0] == '5' || jidconcat[0] == '6' || jidconcat[0] == '7' || jidconcat[0] == '8' || jidconcat[0] == '9' ) { // Hard-code regex
+				pid = atoi(&jidconcat[0]);
+				jid = pid2jid(pid);
+				job = getjobjid(jobs, jid);
+				//printf("process: (%d)\n", pid);
+
+				if (job == NULL) { // Check for NULL
+					printf("(%d): No such process.\n", pid);
+				}
+			} else {
+				if (strcmp("fg", argv[0]) == 0) {
+					printf("%s", "fg: argument must be a PID or %jobid\n" );
+				} else
+				if (strcmp("bg", argv[0]) == 0) {
+					printf("%s", "bg: argument must be a PID or %jobid\n" );
+				}
+			}
+
+
+
+
 		//	printf("LOL");
 		//	jids = argv[1];
-		}
+
 		//printf("jids = %s", jids);
 
 
 	}
 	//NO JID PROVIDED
 	else{
-		printf("that argumenet was not provided!\n");
+		if (strcmp("fg", argv[0]) == 0) {
+			printf("%s", "fg command requires PID or %jobid argument\n");
+		} else
+		if (strcmp("bg", argv[0]) == 0) {
+			printf("%s", "bg command requires PID or %jobid argument\n");
+		} else  //For robustness I guess? Though it really shouldn't reach here
+			printf("%s", "No PID or %jobid argument provided\n");
+
 	}
 	return;
 }
